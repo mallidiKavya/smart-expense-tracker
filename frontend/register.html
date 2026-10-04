@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register - SmartExpense</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 400px;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5568d9;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 7px;
+            text-align: center;
+        }
+
+        .success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Create Account</h1>
+
+    <p class="subtitle">
+        Smart Expense Manager
+    </p>
+
+    <div id="message" class="message"></div>
+
+    <form id="registerForm">
+
+        <div class="form-group">
+            <label for="name">Full Name</label>
+
+            <input
+                type="text"
+                id="name"
+                placeholder="Enter your full name"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter password"
+                minlength="6"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Confirm password"
+                minlength="6"
+                required
+            >
+        </div>
+
+        <button type="submit" id="registerButton">
+            Register
+        </button>
+
+    </form>
+
+    <div class="login-link">
+        Already have an account?
+        <a href="login.html">Login</a>
+    </div>
+
+</div>
+
+
+<script>
+
+document.getElementById("registerForm").addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    const message = document.getElementById("message");
+    const registerButton = document.getElementById("registerButton");
+
+
+    message.className = "message";
+    message.textContent = "";
+
+
+    if (name === "") {
+        message.textContent = "Please enter your name.";
+        message.classList.add("error");
+        return;
+    }
+
+
+    if (email === "") {
+        message.textContent = "Please enter your email.";
+        message.classList.add("error");
+        return;
+    }
+
+
+    if (password.length < 6) {
+        message.textContent =
+            "Password must contain at least 6 characters.";
+        message.classList.add("error");
+        return;
+    }
+
+
+    if (password !== confirmPassword) {
+        message.textContent =
+            "Passwords do not match.";
+        message.classList.add("error");
+        return;
+    }
+
+
+    registerButton.disabled = true;
+    registerButton.textContent = "Registering...";
+
+
+    try {
+
+        const response = await fetch(
+            "http://localhost:8080/api/users/register",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                })
+            }
+        );
+
+
+        /*
+         * IMPORTANT:
+         * If the backend successfully saves the user,
+         * Spring Boot returns HTTP 200.
+         */
+
+        if (response.status >= 200 && response.status < 300) {
+
+            message.textContent =
+                "Registration successful! Redirecting to login...";
+
+            message.classList.add("success");
+
+            registerButton.textContent = "Success!";
+
+
+            document.getElementById("registerForm").reset();
+
+
+            setTimeout(function() {
+
+                window.location.href = "login.html";
+
+            }, 1500);
+
+
+            return;
+        }
+
+
+        /*
+         * Registration failed on the backend.
+         */
+
+        const errorText = await response.text();
+
+        console.log("Backend error:", errorText);
+
+
+       if (errorText.includes("Email already registered")) {
+
+    message.textContent =
+        "Email already registered. Please use another email.";
+
+} else {
+
+    message.textContent =
+        "Backend Error: " + errorText;
+
+}
+
+
+        message.classList.add("error");
+
+        registerButton.disabled = false;
+        registerButton.textContent = "Register";
+
+
+    } catch (error) {
+
+        console.error("Connection error:", error);
+
+        message.textContent =
+            "Unable to connect to backend. Please make sure Spring Boot is running.";
+
+        message.classList.add("error");
+
+        registerButton.disabled = false;
+        registerButton.textContent = "Register";
+    }
+
+});
+
+</script>
+
+</body>
+</html>

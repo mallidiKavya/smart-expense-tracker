@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Budget - Smart Expense Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            height: 70px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 7%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .logo span {
+            color: #4f46e5;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        .nav-links a:hover {
+            color: #4f46e5;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #4f46e5;
+            font-weight: bold;
+        }
+
+        #message {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+
+            .navbar {
+                padding: 0 5%;
+            }
+
+            .nav-links {
+                gap: 10px;
+            }
+
+            .nav-links a {
+                display: none;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <div class="logo">
+            Smart<span>Expense</span>
+        </div>
+
+        <div class="nav-links">
+
+            <a href="dashboard.html">
+                Dashboard
+            </a>
+
+            <a href="income.html">
+                Income
+            </a>
+
+            <a href="expense.html">
+                Expenses
+            </a>
+
+            <a href="transactions.html">
+                Transactions
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <div class="container">
+
+        <div class="card">
+
+            <h1>Set Monthly Budget</h1>
+
+            <p class="subtitle">
+                Set your spending limit for a month.
+            </p>
+
+
+            <form id="budgetForm">
+
+                <label for="amount">
+                    Budget Amount
+                </label>
+
+                <input
+                    type="number"
+                    id="amount"
+                    placeholder="Enter budget amount"
+                    min="1"
+                    step="0.01"
+                    required
+                >
+
+
+                <label for="month">
+                    Month
+                </label>
+
+                <input
+                    type="month"
+                    id="month"
+                    required
+                >
+
+
+                <button type="submit">
+                    Save Budget
+                </button>
+
+            </form>
+
+
+            <p id="message"></p>
+
+
+            <a href="dashboard.html" class="back">
+                ← Back to Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const user = JSON.parse(localStorage.getItem("user"));
+
+
+        if (!user) {
+
+            alert("Please login first.");
+
+            window.location.href = "login.html";
+
+        }
+
+
+        document.getElementById("budgetForm")
+            .addEventListener("submit", function(event) {
+
+                event.preventDefault();
+
+
+                const amount =
+                    parseFloat(document.getElementById("amount").value);
+
+
+                const selectedMonth =
+                    document.getElementById("month").value;
+
+
+                const year =
+                    parseInt(selectedMonth.split("-")[0]);
+
+
+                const month =
+                    parseInt(selectedMonth.split("-")[1]);
+
+
+                const budget = {
+
+                    userId: user.id,
+
+                    amount: amount,
+
+                    month: month,
+
+                    year: year
+
+                };
+
+
+                fetch("http://localhost:8080/api/budgets", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(budget)
+
+                })
+
+                .then(response => {
+
+                    if (!response.ok) {
+
+                        throw new Error("Failed to save budget");
+
+                    }
+
+                    return response.json();
+
+                })
+
+                .then(data => {
+
+                    document.getElementById("message").innerText =
+                        "Budget saved successfully!";
+
+                    document.getElementById("message").style.color =
+                        "green";
+
+                    document.getElementById("budgetForm").reset();
+
+                })
+
+                .catch(error => {
+
+                    console.error(error);
+
+                    document.getElementById("message").innerText =
+                        "Failed to save budget.";
+
+                    document.getElementById("message").style.color =
+                        "red";
+
+                });
+
+            });
+
+    </script>
+
+</body>
+
+</html>
